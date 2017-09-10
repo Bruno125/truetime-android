@@ -221,6 +221,12 @@ public class SntpClient {
         return responseTime + clockOffset;
     }
 
+    public static long customSntpTime(long[] response){
+        long clockOffset = getClockOffset(response);
+        long responseTime = response[RESPONSE_INDEX_RESPONSE_TIME];
+        return responseTime + clockOffset;
+    }
+
     synchronized boolean wasInitialized() {
         return _sntpInitialized;
     }
@@ -290,7 +296,7 @@ public class SntpClient {
         long seconds = read(buffer, offset);
         long fraction = read(buffer, offset + 4);
 
-        return ((seconds - OFFSET_1900_TO_1970) * 1000) + ((fraction * 1000L) / 0x100000000L);
+        return ((seconds - OFFSET_1900_TO_1970) * 1000) + ((fraction * 1000L) / 0x100_000_000L);
     }
 
     /**

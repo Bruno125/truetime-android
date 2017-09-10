@@ -14,8 +14,8 @@ public class TrueTime {
     private static final DiskCacheClient DISK_CACHE_CLIENT = new DiskCacheClient();
     private static final SntpClient SNTP_CLIENT = new SntpClient();
 
-    private static float _rootDelayMax = 100;
-    private static float _rootDispersionMax = 100;
+    private static float _rootDelayMax = 300;
+    private static float _rootDispersionMax = 100_000;
     private static int _serverResponseDelayMax = 200;
     private static int _udpSocketTimeoutInMillis = 30_000;
 

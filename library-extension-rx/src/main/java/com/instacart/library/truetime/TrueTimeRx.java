@@ -1,6 +1,9 @@
 package com.instacart.library.truetime;
 
 import android.content.Context;
+import android.os.SystemClock;
+import android.util.Log;
+
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
 import io.reactivex.FlowableEmitter;
@@ -133,8 +136,8 @@ public class TrueTimeRx
                               return inetAddress.getHostAddress();
                           }
                       })
-                      .flatMap(bestResponseAgainstSingleIp(5))  // get best response from querying the ip 5 times
-                      .take(5)                                  // take 5 of the best results
+                      .flatMap(bestResponseAgainstSingleIp(100))  // get best response from querying the ip 5 times
+                      .take(100)                                  // take 5 of the best results
                       .toList()
                       .toFlowable()
                       .filter(new Predicate<List<long[]>>() {
@@ -194,7 +197,13 @@ public class TrueTimeRx
                                           TrueLog.d(TAG,
                                               "---- requestTime from: " + singleIpHostAddress);
                                           try {
-                                              o.onNext(requestTime(singleIpHostAddress));
+                                              long[] response = requestTime(singleIpHostAddress);
+
+                                              Log.i("TrueTimeLog", singleIpHostAddress + "|" +
+                                                      SntpClient.getRoundTripDelay(response) + "|" +
+                                                      SntpClient.getClockOffset(response) + "|" +
+                                                      diff(response));
+                                              o.onNext(response);
                                               o.onComplete();
                                           } catch (IOException e) {
                                               if (!o.isCancelled()) {
@@ -218,6 +227,14 @@ public class TrueTimeRx
                       .map(filterLeastRoundTripDelay()); // pick best response for each ip
             }
         };
+    }
+
+    private long diff(long[] response){
+        long cachedSntpTime = SntpClient.customSntpTime(response);
+        long cachedDeviceUptime = response[SntpClient.RESPONSE_INDEX_RESPONSE_TICKS];
+        long deviceUptime = SystemClock.elapsedRealtime();
+        long now = cachedSntpTime + (deviceUptime - cachedDeviceUptime);
+        return new Date(now).getTime() - new Date().getTime();
     }
 
     private Function<List<long[]>, long[]> filterLeastRoundTripDelay() {

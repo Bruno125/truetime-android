@@ -48,9 +48,8 @@ public class Sample2Activity
         TrueTimeRx.build()
               .withConnectionTimeout(31_428)
               .withRetryCount(100)
-              .withSharedPreferences(this)
               .withLoggingEnabled(true)
-              .initializeRx("time.google.com")
+              .initializeRx("192.168.1.38")
               .subscribeOn(Schedulers.io())
               .observeOn(AndroidSchedulers.mainThread())
               .subscribe(new Consumer<Date>() {
